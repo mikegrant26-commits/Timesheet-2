@@ -49,12 +49,16 @@ export const generatePdf = (data: TimesheetData, totals: Totals) => {
         else if (row.leaveType === 'bh8') leaveLabel = 'Bank Holiday (8h)';
         else if (row.leaveType === 'sl') leaveLabel = 'Sick Leave (8h)';
 
+        const regVal = parseFloat(String(row.reg)) || 0;
+        const ot15Val = parseFloat(String(row.ot15)) || 0;
+        const ot2Val = parseFloat(String(row.ot2)) || 0;
+
         return [
             row.day,
             row.site || '-',
-            row.reg > 0 ? row.reg.toFixed(2) : '-',
-            row.ot15 > 0 ? row.ot15.toFixed(2) : '-',
-            row.ot2 > 0 ? row.ot2.toFixed(2) : '-',
+            regVal > 0 ? regVal.toFixed(2) : '-',
+            ot15Val > 0 ? ot15Val.toFixed(2) : '-',
+            ot2Val > 0 ? ot2Val.toFixed(2) : '-',
             row.leaveType !== 'none' ? leaveLabel : 'Work'
         ];
     });
