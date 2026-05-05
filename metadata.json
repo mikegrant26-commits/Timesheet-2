@@ -1,0 +1,6 @@
+{
+  "name": "RTD Mechanical Timesheet",
+  "description": "An interactive weekly timesheet application that allows users to input their hours, categorize them, and generate a PDF summary. All data is saved locally in the browser.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
