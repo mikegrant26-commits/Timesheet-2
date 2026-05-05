@@ -1,15 +1,15 @@
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { TimesheetData, Totals } from '../types';
 
-declare global {
-    interface Window {
-        jspdf: any;
-    }
-}
-
 export const generatePdf = (data: TimesheetData, totals: Totals) => {
-    // Accessing jspdf from the CDN global loaded in index.html
-    const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+
+    // Ensure numeric fields are safe for all inputs
+    const safeToFixed = (val: any) => {
+        const num = parseFloat(String(val));
+        return isNaN(num) ? '0.00' : num.toFixed(2);
+    };
 
     // Setup basic styles
     const primaryColor = [30, 58, 138]; // blue-900
@@ -56,20 +56,20 @@ export const generatePdf = (data: TimesheetData, totals: Totals) => {
         return [
             row.day,
             row.site || '-',
-            regVal > 0 ? regVal.toFixed(2) : '-',
-            ot15Val > 0 ? ot15Val.toFixed(2) : '-',
-            ot2Val > 0 ? ot2Val.toFixed(2) : '-',
+            regVal > 0 ? safeToFixed(regVal) : '-',
+            ot15Val > 0 ? safeToFixed(ot15Val) : '-',
+            ot2Val > 0 ? safeToFixed(ot2Val) : '-',
             row.leaveType !== 'none' ? leaveLabel : 'Work'
         ];
     });
 
     // Draw Table
-    (doc as any).autoTable({
+    autoTable(doc, {
         startY: 65,
         head: [['Day', 'Work Site / Description', 'Regular', 'OT 1.5x', 'OT 2.0x', 'Type']],
         body: tableData,
         theme: 'grid',
-        headStyles: { fillColor: primaryColor, textColor: 255, fontStyle: 'bold' },
+        headStyles: { fillColor: primaryColor as any, textColor: 255, fontStyle: 'bold' },
         styles: { fontSize: 9, halign: 'left' },
         columnStyles: {
             2: { halign: 'center' },
@@ -80,7 +80,7 @@ export const generatePdf = (data: TimesheetData, totals: Totals) => {
     });
 
     // Get Y position after the table using previousAutoTable.finalY
-    const finalY = ((doc as any).previousAutoTable?.finalY || 150) + 15;
+    const finalY = ((doc as any).lastAutoTable?.finalY || 150) + 15;
 
     // Totals Section
     doc.setFontSize(11);
@@ -89,13 +89,13 @@ export const generatePdf = (data: TimesheetData, totals: Totals) => {
     
     doc.setFont('helvetica', 'normal');
     doc.text(`Total Regular:`, 15, finalY + 8);
-    doc.text(totals.totalReg.toFixed(2), 55, finalY + 8);
+    doc.text(safeToFixed(totals.totalReg), 55, finalY + 8);
     
     doc.text(`Total OT 1.5x:`, 15, finalY + 15);
-    doc.text(totals.totalOT15.toFixed(2), 55, finalY + 15);
+    doc.text(safeToFixed(totals.totalOT15), 55, finalY + 15);
     
     doc.text(`Total OT 2.0x:`, 15, finalY + 22);
-    doc.text(totals.totalOT2.toFixed(2), 55, finalY + 22);
+    doc.text(safeToFixed(totals.totalOT2), 55, finalY + 22);
 
     // Highlight Box for Effective Hours
     doc.setFillColor(240, 249, 255);
@@ -107,7 +107,7 @@ export const generatePdf = (data: TimesheetData, totals: Totals) => {
     doc.setFontSize(10);
     doc.text('EFFECTIVE TOTAL', 162.5, finalY + 5, { align: 'center' });
     doc.setFontSize(18);
-    doc.text(totals.totalEffective.toFixed(2), 162.5, finalY + 18, { align: 'center' });
+    doc.text(safeToFixed(totals.totalEffective), 162.5, finalY + 18, { align: 'center' });
 
     // Save PDF
     const fileName = `Timesheet_${(data.employeeName || 'Timesheet').replace(/\s+/g, '_')}_${data.weekEndingDate}.pdf`;

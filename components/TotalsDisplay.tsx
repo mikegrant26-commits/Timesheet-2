@@ -6,7 +6,11 @@ interface TotalsDisplayProps {
 }
 
 const TotalsDisplay: React.FC<TotalsDisplayProps> = ({ totals }) => {
-    const { totalReg, totalOT15, totalOT2, totalEffective } = totals;
+    const totalReg = parseFloat(String(totals.totalReg)) || 0;
+    const totalOT15 = parseFloat(String(totals.totalOT15)) || 0;
+    const totalOT2 = parseFloat(String(totals.totalOT2)) || 0;
+    const totalEffective = parseFloat(String(totals.totalEffective)) || 0;
+    
     const totalGrand = totalReg + totalOT15 + totalOT2;
 
     return (
